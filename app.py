@@ -4,6 +4,10 @@ from werkzeug.exceptions import HTTPException
 import requests
 from flask import Flask, jsonify, request
 
+class NotFoundException(Exception):
+    """ Exception to use when results are empty """
+    pass
+
 APP = Flask(__name__)
 
 @APP.route('/')
@@ -28,8 +32,14 @@ def get_nearby_stops():
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
             raise HTTPException(description=req.json())
-        req.raise_for_status()
-        response = req.json()['LocationList']['StopLocation']
+        json = req.json()
+        APP.logger.info(json)
+        location_list = json['LocationList']
+        APP.logger.info(location_list)
+        if 'StopLocation' not in location_list:
+            raise NotFoundException('Did not find anything')
+        response = location_list['StopLocation']
+        APP.logger.info(response)
         filtered = [item for item in response if 'track' not in item]
 
         return jsonify({
@@ -38,6 +48,9 @@ def get_nearby_stops():
         })
     except HTTPException as err:
         return make_error(500, err.description)
+    except NotFoundException as err:
+        APP.logger.warning(err)
+        return make_error(404, str(err))
 
 def make_error(status_code, message):
     """ Function for returning errors easily """
