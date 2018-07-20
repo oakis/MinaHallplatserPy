@@ -1,5 +1,4 @@
 """ Mina Hållplatser API """
-# from urllib.error import HTTPError
 import datetime
 from werkzeug.exceptions import HTTPException
 import requests
