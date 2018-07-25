@@ -18,7 +18,7 @@ def hello_world():
     return 'Hello, World!'
 
 @APP.route('/api/vasttrafik/departures', methods=['POST'])
-def get_departures():
+def get_departures(time_span='90'):
     """ Departures """
     APP.logger.info('get_departures():')
 
@@ -26,17 +26,19 @@ def get_departures():
     id_number = data['id']
     current_date = date.today().strftime('%Y-%m-%d')
     current_time = datetime.now().strftime('%H:%M')
-    # time_span = data['']
     access_token = request.headers['access_token']
 
     url = 'https://api.vasttrafik.se/bin/rest.exe/v2/departureBoard?id='\
         + id_number + '&date=' + current_date + '&time=' + current_time +\
-        '&format=json&timeSpan=90&maxDeparturesPerLine=2&needJourneyDetail=0'
+        '&format=json&timeSpan=' + time_span + '&maxDeparturesPerLine=2&needJourneyDetail=0'
     headers = {'Authorization': 'Bearer ' + access_token}
     req = requests.get(url, headers=headers)
     json = req.json()
     departure_board = json['DepartureBoard']
     if 'error' in departure_board:
+        error = departure_board['error']
+        if error == 'No journeys found':
+            return get_departures('1440')
         raise NotFoundException('Did not find anything')
     departures = departure_board['Departure']
 
