@@ -45,7 +45,7 @@ def get_departures(time_span='90'):
     def departures_model(item):
 
         def get_key_value(key):
-            return item[key] if key in item else ''
+            return item[key] if key in item else None
 
         is_live = 'rtTime' in item
         if is_live:
@@ -73,9 +73,9 @@ def get_departures(time_span='90'):
             'accessibility': get_key_value('accessibility'),
             'bgColor': get_key_value('bgColor'),
             'clockLeft': clock_left,
-            'clockNext': '',
+            'clockNext': None,
             'timeLeft': minutes_left,
-            'timeNext': '',
+            'timeNext': None,
             'direction': direction.strip(),
             'via': 'via ' + via.strip() if via != '' else via,
             'name': get_key_value('name'),
@@ -100,9 +100,9 @@ def get_departures(time_span='90'):
             yield {
                 **grouped_busses[0],
                 "timeLeft": min(times, key=int),
-                "timeNext": "" if len(times) == 1 else max(times, key=int),
+                "timeNext": None if len(times) == 1 else max(times, key=int),
                 "clockLeft": min(clocks),
-                "clockNext": "" if len(clocks) == 1 else max(clocks),
+                "clockNext": None if len(clocks) == 1 else max(clocks),
             }
 
     merged_departures = list(merge_departures(mapped_departures))
