@@ -113,6 +113,7 @@ def get_departures(time_span='90'):
 
     return jsonify({
         'departures': merged_departures,
+        'timestamp': date.today().strftime('%Y-%m-%d') + 'T' + datetime.now().strftime('%H:%M:%S'),
     })
 
 
@@ -195,7 +196,7 @@ def search_stops():
 
         return jsonify({
             'data': mapped_stops[0:10],
-            'timestamp': date.today().strftime('%Y-%m-%d') + 'T' + datetime.now().strftime('%H:%M')
+            'timestamp': date.today().strftime('%Y-%m-%d') + 'T' + datetime.now().strftime('%H:%M:%S'),
         })
     except HTTPException as err:
         return make_error(500, err.description)
