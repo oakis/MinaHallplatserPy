@@ -153,4 +153,49 @@ def make_error(status_code, message):
     response.status_code = status_code
     return response
 
+
+@APP.route('/api/vasttrafik/stops', methods=['POST'])
+def search_stops():
+    """ Search stops """
+    APP.logger.info('search_stops():')
+
+    try:
+        data = request.get_json()
+        search_string = str(data['search'])
+        access_token = request.headers['access_token']
+
+        url = 'https://api.vasttrafik.se/bin/rest.exe/v2/location.name?input='\
+            + search_string + '&format=json'
+        headers = {'Authorization': 'Bearer ' + access_token}
+        req = requests.get(url, headers=headers)
+        if req.status_code != 200:
+            raise HTTPException(description=req.json())
+        json = req.json()
+
+        location_list = json['LocationList']
+        if 'StopLocation' in location_list:
+            if isinstance(location_list['StopLocation'], dict):
+                stops = [location_list['StopLocation']]
+            else:
+                stops = location_list['StopLocation']
+        else:
+            raise NotFoundException('Did not find anything')
+
+        def search_model(stop):
+            return dict({
+                'id': stop['id'],
+                'name': stop['name'],
+            })
+
+        mapped_stops = list(map(search_model, stops))
+
+        return jsonify({
+            'data': mapped_stops[0:10],
+            'timestamp': date.today().strftime('%Y-%m-%d') + 'T' + datetime.now().strftime('%H:%M')
+        })
+    except HTTPException as err:
+        return make_error(500, err.description)
+    except NotFoundException as err:
+        return make_error(404, str(err))
+
 APP.run(port=5000, debug=True)
