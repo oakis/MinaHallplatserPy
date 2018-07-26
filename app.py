@@ -39,7 +39,7 @@ def get_departures(time_span='90'):
         error = departure_board['error']
         if error == 'No journeys found':
             return get_departures('1440')
-        raise NotFoundException('Did not find anything')
+        raise NotFoundException('Hittade inga avgångar på denna hållplats.')
 
     if isinstance(departure_board['Departure'], dict):
         departures = [departure_board['Departure']]
@@ -137,7 +137,7 @@ def get_nearby_stops():
         json = req.json()
         location_list = json['LocationList']
         if 'StopLocation' not in location_list:
-            raise NotFoundException('Did not find anything')
+            raise NotFoundException('Kunde inte hitta några hållplatser nära dig.')
         response = location_list['StopLocation']
         filtered = [item for item in response if 'track' not in item]
 
@@ -184,7 +184,7 @@ def search_stops():
             else:
                 stops = location_list['StopLocation']
         else:
-            raise NotFoundException('Did not find anything')
+            raise NotFoundException('Hittade inga hållplatser. Prova att söka på något annat.')
 
         def search_model(stop):
             return dict({
