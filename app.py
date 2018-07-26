@@ -40,7 +40,11 @@ def get_departures(time_span='90'):
         if error == 'No journeys found':
             return get_departures('1440')
         raise NotFoundException('Did not find anything')
-    departures = departure_board['Departure']
+
+    if isinstance(departure_board['Departure'], dict):
+        departures = [departure_board['Departure']]
+    else:
+        departures = departure_board['Departure']
 
     def departures_model(item):
 
