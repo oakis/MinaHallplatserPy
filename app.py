@@ -40,6 +40,8 @@ def get_departures(time_span='90'):
             '&format=json&timeSpan=' + time_span + '&maxDeparturesPerLine=2&needJourneyDetail=0'
         headers = {'Authorization': 'Bearer ' + access_token}
         req = requests.get(url, headers=headers)
+        if req.status_code != 200:
+            raise HTTPException(description=req.json())
         json = req.json()
         departure_board = json['DepartureBoard']
         if 'error' in departure_board:
