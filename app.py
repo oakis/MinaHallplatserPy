@@ -1,4 +1,5 @@
 """ Mina Hållplatser API """
+import logging
 from datetime import date, datetime
 import math
 from itertools import groupby
@@ -6,11 +7,16 @@ from werkzeug.exceptions import HTTPException
 import requests
 from flask import Flask, jsonify, request
 
+APP = Flask(__name__)
+
+if __name__ != '__main__':
+    GUNICORN_LOGGER = logging.getLogger('gunicorn.error')
+    APP.logger.handlers = GUNICORN_LOGGER.handlers
+    APP.logger.setLevel(GUNICORN_LOGGER.level)
+
 class NotFoundException(Exception):
     """ Exception to use when results are empty """
     pass
-
-APP = Flask(__name__)
 
 @APP.route('/')
 def hello_world():
@@ -196,11 +202,13 @@ def search_stops():
 
         return jsonify({
             'data': mapped_stops[0:10],
-            'timestamp': date.today().strftime('%Y-%m-%d') + 'T' + datetime.now().strftime('%H:%M:%S'),
+            'timestamp': date.today().strftime('%Y-%m-%d') + 'T'\
+                + datetime.now().strftime('%H:%M:%S'),
         })
     except HTTPException as err:
         return make_error(500, err.description)
     except NotFoundException as err:
         return make_error(404, str(err))
 
-APP.run(port=5000, debug=True)
+if __name__ == '__main__':
+    APP.run(port=5000, debug=True)
